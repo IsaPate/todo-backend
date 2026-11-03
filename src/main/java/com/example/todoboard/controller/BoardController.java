@@ -59,7 +59,6 @@ public class BoardController {
 
     @DeleteMapping("/board/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasRole('ADMIN')")
     public void deleteBoard(@PathVariable int id, @AuthenticationPrincipal UserPrincipal userPrincipal) {
         this.boardService.delete(id, userPrincipal);
     }
