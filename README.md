@@ -25,7 +25,7 @@ A REST API for a Kanban-style todo board. Users register, log in with JWT, and m
 
 ## Data model
 
-```
+```text
 User 1 ── * Board 1 ── * Card
 ```
 
@@ -65,7 +65,7 @@ Every endpoint except register and login needs `Authorization: Bearer <token>`.
 Register or log in:
 
 ```json
-{ "username": "isaak", "password": "secret123" }
+{ "username": "random_username", "password": "secret123" }
 ```
 
 Create a card:
@@ -90,7 +90,7 @@ Create a card:
 ### 1. Create the database
 
 ```sql
-CREATE DATABASE todoboard;
+CREATE DATABASE random_database;
 ```
 
 ### 2. Configure environment variables
@@ -98,7 +98,7 @@ CREATE DATABASE todoboard;
 Create a `.env` file in the project root. It is ignored by git.
 
 ```properties
-DATABASE_URL=jdbc:postgresql://localhost:5432/todoboard
+DATABASE_URL=jdbc:postgresql://localhost:5432/random_database
 DATABASE_USERNAME=your_db_user
 DATABASE_PASSWORD=your_db_password
 
