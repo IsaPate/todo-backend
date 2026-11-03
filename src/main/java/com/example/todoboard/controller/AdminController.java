@@ -12,4 +12,8 @@ public class AdminController {
     @DeleteMapping("/users/{id}")
     public void deleteUser() {
     }
+
+    @DeleteMapping("/board/{id}")
+    public void deleteBoard() {
+    }
 }
