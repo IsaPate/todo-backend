@@ -2,6 +2,7 @@ package com.example.todoboard.config;
 
 import java.util.List;
 
+import org.apache.tomcat.util.net.DispatchType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import jakarta.servlet.DispatcherType;
 
 @Configuration
 @EnableWebSecurity
@@ -35,6 +38,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                                 .anyRequest()
                                 .authenticated())
 
