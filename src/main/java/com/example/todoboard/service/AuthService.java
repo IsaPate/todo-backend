@@ -49,7 +49,8 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Need to register first");
         }
 
-        User userDb = userRepo.findUserByUsername(userRequest.username()).orElseThrow(null);
+        User userDb = userRepo.findUserByUsername(userRequest.username()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
 
         String hashed = userDb.getPassword();
 
