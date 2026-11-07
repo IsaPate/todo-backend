@@ -72,7 +72,8 @@ public class CardService {
 
     public void delete(int id, UserPrincipal userPrincipal) {
         User user = getUserOrThrow(userPrincipal);
-        Card card = this.cardRepo.findByIdAndBoardUserId(id, user.getId()).orElseThrow(null);
+        Card card = this.cardRepo.findByIdAndBoardUserId(id, user.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "card not found"));
         this.cardRepo.deleteById(card.getId());
     }
 
