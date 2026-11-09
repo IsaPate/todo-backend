@@ -14,11 +14,14 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.todoboard.model.Board;
 import com.example.todoboard.model.Card;
 import com.example.todoboard.model.User;
+import com.example.todoboard.model.dto.CardPatchRequest;
 import com.example.todoboard.model.dto.CardRequest;
 import com.example.todoboard.model.dto.CardResponse;
 import com.example.todoboard.model.principal.UserPrincipal;
 import com.example.todoboard.repo.CardRepo;
 import com.example.todoboard.repo.UserRepo;
+
+import jakarta.validation.Valid;
 
 @Service
 public class CardService {
@@ -93,5 +96,19 @@ public class CardService {
         card.setBoard(fromDb);
 
         return CardResponse.from(card);
+    }
+
+    public CardResponse updateCardByProperties(int id, CardPatchRequest cardPatchRequest,
+            UserPrincipal userPrincipal) {
+
+        User user = getUserOrThrow(userPrincipal);
+
+        Card card = cardRepo.findByIdAndBoardUserId(id, user.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found"));
+
+        card.setPosition(cardPatchRequest.position());
+        card.setStatus(cardPatchRequest.status());
+        return CardResponse.from(card);
+
     }
 }
