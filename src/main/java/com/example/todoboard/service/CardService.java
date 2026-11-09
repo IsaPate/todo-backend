@@ -98,6 +98,7 @@ public class CardService {
         return CardResponse.from(card);
     }
 
+    @Transactional
     public CardResponse updateCardByProperties(int id, CardPatchRequest cardPatchRequest,
             UserPrincipal userPrincipal) {
 
