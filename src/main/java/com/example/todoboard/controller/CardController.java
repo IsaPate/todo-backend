@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.todoboard.model.dto.CardPatchRequest;
 import com.example.todoboard.model.dto.CardRequest;
 import com.example.todoboard.model.dto.CardResponse;
 import com.example.todoboard.model.principal.UserPrincipal;
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -50,6 +52,14 @@ public class CardController {
         return new ResponseEntity<>(this.cardService
                 .create(card, userPrincipal),
                 HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/card/{id}")
+    public ResponseEntity<CardResponse> updateCardProperty(@PathVariable int id,
+            @Valid @RequestBody CardPatchRequest cardPatchRequest,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return new ResponseEntity<>(this.cardService.updateCardByProperties(id, cardPatchRequest, userPrincipal),
+                HttpStatus.OK);
     }
 
     @PutMapping("/card/{id}")
