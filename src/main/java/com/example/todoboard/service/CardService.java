@@ -78,12 +78,16 @@ public class CardService {
         this.cardRepo.deleteById(card.getId());
     }
 
+    private void moveCards() {
+    }
+
     @Transactional
     public CardResponse update(int id, CardRequest cardRequest, UserPrincipal userPrincipal) {
         User user = getUserOrThrow(userPrincipal);
 
         Card card = this.cardRepo.findByIdAndBoardUserId(id, user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "card not found"));
+
         card.setTitle(cardRequest.title());
         card.setDescription(cardRequest.description());
         card.setStatus(cardRequest.status());
