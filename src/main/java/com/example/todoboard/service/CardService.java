@@ -20,8 +20,6 @@ import com.example.todoboard.model.principal.UserPrincipal;
 import com.example.todoboard.repo.CardRepo;
 import com.example.todoboard.repo.UserRepo;
 
-import jakarta.persistence.OrderBy;
-
 @Service
 public class CardService {
 
