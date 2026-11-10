@@ -68,6 +68,7 @@ public class CardService {
         return CardResponse.from(card);
     }
 
+    @Transactional
     public CardResponse create(CardRequest request, UserPrincipal userPrincipal) {
         User user = getUserOrThrow(userPrincipal);
         Board board = this.boardService.getEntityBoard(request.boardId(), user.getId());
