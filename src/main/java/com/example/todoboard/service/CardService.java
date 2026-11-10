@@ -106,11 +106,21 @@ public class CardService {
         return CardResponse.from(saved);
     }
 
+    @Transactional
     public void delete(int id, UserPrincipal userPrincipal) {
         User user = getUserOrThrow(userPrincipal);
         Card card = this.cardRepo.findByIdAndBoardUserId(id, user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "card not found"));
+
+        List<Card> cards = this.cardRepo.findAllCardsByBoardIdAndStatus(card.getBoard().getId(), card.getStatus());
+        cards.remove(card);
+        List<Card> sorted = sortCardsByPosition(cards);
+        for (int i = 0; i < sorted.size(); i++) {
+            sorted.get(i).setPosition(i);
+        }
+
         this.cardRepo.deleteById(card.getId());
+
     }
 
     private Card moveCards(Card card, User user, CardRequest cardRequest) {
