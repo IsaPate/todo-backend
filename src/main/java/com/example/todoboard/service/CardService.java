@@ -51,6 +51,20 @@ public class CardService {
                 .collect(Collectors.toList());
     }
 
+    private List<Card> reIndexPositions(List<Card> cards, boolean changeStatus,
+            CardRequest cardRequest) {
+
+        for (int i = 0; i < cards.size(); i++) {
+
+            cards.get(i).setPosition(i);
+            if (changeStatus == true) {
+                cards.get(i).setStatus(cardRequest.status());
+            }
+        }
+
+        return cards;
+    }
+
     public List<CardResponse> getAllCards(UserPrincipal userPrincipal) {
         User user = getUserOrThrow(userPrincipal);
 
@@ -118,6 +132,10 @@ public class CardService {
                 sortedListToBeMovedWithNewStatus.get(i).setPosition(i);
 
             }
+            for (int i = 0; i < currentCards.size(); i++) {
+                currentCards.get(i).setPosition(i);
+            }
+
         } else {
             if (!card.getPosition().equals(cardRequest.position())) {
 
