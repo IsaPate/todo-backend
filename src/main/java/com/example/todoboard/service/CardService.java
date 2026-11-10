@@ -1,6 +1,7 @@
 package com.example.todoboard.service;
 
 import java.util.List;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +79,47 @@ public class CardService {
         this.cardRepo.deleteById(card.getId());
     }
 
-    private void moveCards() {
+    private List<Card> sortCardsByPosition(List<Card> cards) {
+        return cards.stream().sorted((c1, c2) -> c1.getPosition().compareTo(c2.getPosition()))
+                .collect(Collectors.toList());
+    }
+
+    private Card moveCards(Card card, User user, CardRequest cardRequest) {
+
+        List<Card> currentCards = this.cardRepo.findAllCardsByBoardIdAndStatus(card.getBoard().getId(),
+                card.getStatus());
+
+        if (!card.getStatus().equals(cardRequest.status())) {
+            List<Card> listToBeMovedWithNewStatus = this.cardRepo.findAllCardsByBoardIdAndStatus(
+                    card.getBoard().getId(),
+                    cardRequest.status());
+            List<Card> sortedListToBeMovedWithNewStatus = sortCardsByPosition(listToBeMovedWithNewStatus);
+            currentCards.remove(card);
+            int newIndex = Math.min(cardRequest.position(), sortedListToBeMovedWithNewStatus.size());
+            sortedListToBeMovedWithNewStatus.add(newIndex, card);
+            for (int i = 0; i < sortedListToBeMovedWithNewStatus.size(); i++) {
+
+                sortedListToBeMovedWithNewStatus.get(i).setStatus(cardRequest.status());
+                sortedListToBeMovedWithNewStatus.get(i).setPosition(i);
+
+            }
+        } else {
+            if (!card.getPosition().equals(cardRequest.position())) {
+
+                List<Card> sort = sortCardsByPosition(currentCards);
+                // cards.removeIf( (c) ->c. );
+                sort.remove(card);
+                int index = Math.min(cardRequest.position(), sort.size());
+                // if zero an iwant to move it to 2?
+                sort.add(index, card);
+                for (int i = 0; i < sort.size(); i++) {
+                    sort.get(i).setPosition(i);
+                }
+
+            }
+        }
+
+        return card;
     }
 
     @Transactional
@@ -90,14 +131,19 @@ public class CardService {
 
         card.setTitle(cardRequest.title());
         card.setDescription(cardRequest.description());
-        card.setStatus(cardRequest.status());
-        card.setPosition(cardRequest.position());
-
         int boardId = cardRequest.boardId();
 
         Board fromDb = this.boardService.getEntityBoard(boardId, user.getId());
 
         card.setBoard(fromDb);
+
+        if (!cardRequest.position().equals(card.getPosition()) || !cardRequest.status().equals(card.getStatus())) {
+            Card moved = moveCards(card, user, cardRequest);
+            return CardResponse.from(moved);
+        }
+
+        card.setStatus(cardRequest.status());
+        card.setPosition(cardRequest.position());
 
         return CardResponse.from(card);
     }
