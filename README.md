@@ -17,7 +17,8 @@ A REST API for a Kanban-style todo board. Users register, log in with JWT, and m
 - User registration and login. Login returns a JWT token.
 - JWT filter validates the `Authorization: Bearer <token>` header on every request.
 - Role-based access (`USER`, `ADMIN`).
-- Boards that contain ordered cards (`TODO`, `IN_PROGRESS`, `DONE`).
+- Boards with Kanban columns (`TODO`, `IN_PROGRESS`, `DONE`).
+- Card ordering: moving, creating or deleting a card renumbers the affected columns, so positions stay gap-free (see [Card ordering](#card-ordering)).
 - Ownership checks: users can only access their own boards and cards.
 - Request validation with clear `400` errors.
 - DTOs for requests and responses, so entities are never exposed.
@@ -28,6 +29,23 @@ A REST API for a Kanban-style todo board. Users register, log in with JWT, and m
 ```text
 User 1 ── * Board 1 ── * Card
 ```
+
+## Card ordering
+
+Each card has a `position` inside its column, where a column is one board plus one status. Positions start at `0` and have no gaps.
+
+The service treats each column as an ordered list and renumbers it after every change, inside a single transaction:
+
+| Action | What happens |
+|--------|--------------|
+| Move within a column | The card is taken out and inserted at the new index. The column is renumbered. |
+| Move to another column | The old column closes the gap. The card is inserted into the new column at the requested index, and both columns are renumbered. |
+| Create | The new card is inserted at the requested index, and the column is renumbered. |
+| Delete | The remaining cards in the column are renumbered. |
+
+If the requested position is larger than the column, the card goes to the end. Changes run in `@Transactional` service methods, so a move either fully succeeds or rolls back.
+
+Example: the `TODO` column holds `[A(0), B(1), C(2)]`. Moving `C` to position `0` gives `[C(0), A(1), B(2)]`.
 
 ## API endpoints
 
@@ -57,7 +75,8 @@ Every endpoint except register and login needs `Authorization: Bearer <token>`.
 | GET    | `/api/cards`     | List the current user's cards   |
 | GET    | `/api/card/{id}` | Get one card                    |
 | POST   | `/api/card`      | Create a card in a board        |
-| PUT    | `/api/card/{id}` | Update a card                   |
+| PUT    | `/api/card/{id}` | Update a card, including moving it |
+| PATCH  | `/api/card/{id}` | Change only status and position |
 | DELETE | `/api/card/{id}` | Delete a card                   |
 
 ### Example requests
@@ -75,9 +94,15 @@ Create a card:
   "title": "Write README",
   "description": "Document the API",
   "status": "TODO",
-  "position": 1,
+  "position": 0,
   "boardId": 1
 }
+```
+
+Move a card (only status and position):
+
+```json
+{ "status": "DONE", "position": 0 }
 ```
 
 ## Getting started
