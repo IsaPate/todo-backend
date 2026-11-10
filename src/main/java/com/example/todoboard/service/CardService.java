@@ -46,6 +46,11 @@ public class CardService {
                 .orElseThrow(() -> new UsernameNotFoundException("Not found"));
     }
 
+    private List<Card> sortCardsByPosition(List<Card> cards) {
+        return cards.stream().sorted((c1, c2) -> c1.getPosition().compareTo(c2.getPosition()))
+                .collect(Collectors.toList());
+    }
+
     public List<CardResponse> getAllCards(UserPrincipal userPrincipal) {
         User user = getUserOrThrow(userPrincipal);
 
@@ -68,7 +73,21 @@ public class CardService {
         Board board = this.boardService.getEntityBoard(request.boardId(), user.getId());
         Card card2 = new Card(
                 request.title(), request.description(), request.status(), request.position(), board);
+
+        List<Card> cards = this.cardRepo.findAllCardsByBoardIdAndStatus(board.getId(), request.status());
+
+        List<Card> sorted = sortCardsByPosition(cards);
+
+        int index = Math.min(request.position(), sorted.size());
+
+        sorted.add(index, card2);
+
+        for (int i = 0; i < sorted.size(); i++) {
+            sorted.get(i).setPosition(i);
+        }
+
         Card saved = this.cardRepo.save(card2);
+
         return CardResponse.from(saved);
     }
 
@@ -77,11 +96,6 @@ public class CardService {
         Card card = this.cardRepo.findByIdAndBoardUserId(id, user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "card not found"));
         this.cardRepo.deleteById(card.getId());
-    }
-
-    private List<Card> sortCardsByPosition(List<Card> cards) {
-        return cards.stream().sorted((c1, c2) -> c1.getPosition().compareTo(c2.getPosition()))
-                .collect(Collectors.toList());
     }
 
     private Card moveCards(Card card, User user, CardRequest cardRequest) {
